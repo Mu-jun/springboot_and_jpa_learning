@@ -136,3 +136,42 @@
 ## 엔티티 클래스 개발 시 주의점
 - Setter를 막 열어두면 가까운 미래에 엔티티가 도대체 왜 변경되는지 추적하기 힘들어진다.
 - 따라서, 엔티티를 변경할 때는 Setter 대신에 변경 지점이 명확하도록 변경을 위한 비즈니스 메서드를 별도로 제공해야 한다.
+
+## 엔티티 설계시 주의점
+### 엔티티에는 가급적 Setter를 사용하지 말자.
+- Setter가 모두 열려있으면, 변경 포인트가 너무 많아서 유지보수가 어렵다.
+### 모든 연관관계는 지연로딩(Lazy)으로 설정.
+- 즉시로딩(Eager)은 예측이 어렵고, 어떤 SQL이 실행될지 추적하기 어렵다.
+- 특히 JPQL을 실행할 때 N+1문제가 자주 발생한다.
+- 따라서 실무에서 모든 연관관계는 지연로딩(Layz)으로 설정해야 한다.
+- 연관된 엔티티를 함께 DB에서 조회해야 하면, fetch join 또는 엔티티 그래프 기능을 사용한다.
+- ```@XToOne(OneToOne, ManyToOne)```관계는 기본이 즉시로딩이므로 직접 지연로딩으로 설정해야 한다.
+### 컬렉션은 필드에서 초기화 하자.
+- null 문제에서 안전하다.
+- 하이버네이트는 엔티티를 영속화 할 때, 컬렉션을 감싸서 하이버네이트가 제공하는 내장 컬렉션으로 변경한다.
+```
+Member member = new Member();
+System.out.println(member.getOrders().getClass());
+em.persist(member);
+System.out.println(member.getOrders().getClass());
+
+//출력 결과
+class java.util.ArrayList
+class org.hibernate.collection.internal.PersistentBag
+```
+- 만약 ```getOrders()```처럼 임의의 메서드에서 컬렉션을 잘못 생성하면 하이버네이트 내부 메커니즘에 문제가 발생할 수 있다.
+- 따라서 필드레벨에서 생성하는 것이 가장 안전하고, 코드도 간결하다.
+### 테이블, 컬럼명 생성 전략
+- 스프링 부트에서 하이버네이트 기본 매핑 전략을 변경해서 실제 테이블 필드명은 다름
+- 카멜 케이스 -> 스네이크 케이스
+- .(점) -> _(언더스코어)
+- 대문자 -> 소문자
+- https://docs.jboss.org/hibernate/orm/5.4/userguide/html_single/Hibernate_User_Guide.html#naming
+- https://docs.spring.io/spring-boot/docs/2.1.3.RELEASE/reference/htmlsingle/#howto-configure-hibernate-naming-strategy
+- 적용2단계
+  1. 논리명 생성: 명시적으로 컬럼, 테이블명을 직접 적지 않으면 ```ImplicitNamingStrategy``` 사용
+    ```spring.jpa.hibernate.naming.implicit-strategy``` : 테이블이나, 컬럼명을 명시하지 않을 때 논리명
+    적용,
+  2. 물리명 적용:
+     ```spring.jpa.hibernate.naming.physical-strategy``` : 모든 논리명에 적용됨, 실제 테이블에 적용
+     (username -> usernm 등으로 회사 룰로 바꿀 수 있음)
