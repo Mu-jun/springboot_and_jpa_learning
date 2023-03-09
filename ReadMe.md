@@ -29,6 +29,14 @@
 - 상품의 종류는 도서, 음반, 영화가 있다.
 - 상품을 카테고리로 구분할 수 잇다.
 - 상품 주문시 배송 정보를 입력할 수 있다.
+
+### 예제를 단순화 하기 위해 다음 기능은 구현 X
+- 로그인과 권한 관리X
+- 파라미터 검증과 예외 처리 단순화
+- 상품은 도서만 사용
+- 카테고리 사용X
+- 배송 정보는 사용X
+
 <hr>
 
 ## 도메인 모델과 테이블 설계
@@ -175,3 +183,23 @@ class org.hibernate.collection.internal.PersistentBag
   2. 물리명 적용:
      ```spring.jpa.hibernate.naming.physical-strategy``` : 모든 논리명에 적용됨, 실제 테이블에 적용
      (username -> usernm 등으로 회사 룰로 바꿀 수 있음)
+
+## 애플리케이션 아키텍처
+### 계층형 구조 사용
+- controller, web : 웹 계층
+- service : 비즈니스 로직, 트랜잭션 처리
+- repository : JPA를 직접 사용하는 계층, 엔티티 매니저 사용
+- domain : 엔티티가 모여 있는 계층, 모든 계층에서 사용
+
+### 패키지 구조
+- jpabook.jpashop
+  - domain
+  - exception
+  - repository
+  - service
+  - web
+
+### 개발 순서
+1. 서비스, 리포지토리 계층을 개발
+2. 테스트 케이스를 작성해서 검증
+3. 마지막에 웹 계층 적용
