@@ -203,3 +203,8 @@ class org.hibernate.collection.internal.PersistentBag
 1. 서비스, 리포지토리 계층을 개발
 2. 테스트 케이스를 작성해서 검증
 3. 마지막에 웹 계층 적용
+
+### cascade = CascadeType.ALL 의 범위
+- persist 라이프 사이클이 완전히 똑같은 경우 사용 O
+- 다른 것들이 참조할 수 없는 private owner인 경우 사용 O
+- 여러 클래스에서 참조하는 클래스를 참조한다면 cascade = CascadeType.ALL 를 함부로 사용하면 안된다.
